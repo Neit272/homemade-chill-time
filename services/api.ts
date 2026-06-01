@@ -556,7 +556,8 @@ export const searchContent = async (
         if (filters.country || filters.year) return [];
 
         try {
-            const url = `${COMIC_API_BASE}/v1/api/tim-kiem?keyword=${encodeURIComponent(keyword)}&page=${page}`;
+            let url = `${COMIC_API_BASE}/v1/api/tim-kiem?keyword=${encodeURIComponent(keyword)}&page=${page}`;
+            if (filters.category) url += `&category=${filters.category}`;
             const response = await fetch(url);
             if (!response.ok) return [];
             const data = await response.json();

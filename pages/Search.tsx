@@ -7,50 +7,85 @@ import { Icons } from '../components/Icon';
 import { useSearchParams } from 'react-router-dom';
 import { CustomSelect } from '../components/CustomSelect';
 import { YEARS } from '../constants';
-import { useSessionStorage } from '../hooks/useSessionStorage';
+import { COMIC_STATUSES } from '../constants';
 import { is$Mode } from '../services/api.ob';
 
 export const Search = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const scopeParam = searchParams.get('scope');
+    
+    const qParam = searchParams.get('q');
+    const scopeParamFromUrl = searchParams.get('scope');
 
-    const [keyword, setKeyword] = useSessionStorage('search_keyword', '');
-    const [debouncedKeyword, setDebouncedKeyword] = useSessionStorage('search_debounced_keyword', '');
+    const [keyword, setKeyword] = useState(qParam || '');
+    const [debouncedKeyword, setDebouncedKeyword] = useState(qParam || '');
     const [isDebouncing, setIsDebouncing] = useState(false);
     const [items, setItems] = useState<ContentItem[]>([]);
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
-    const [showFilters, setShowFilters] = useSessionStorage('search_show_filters', false);
+    const [showFilters, setShowFilters] = useState(false);
     
-    const [scope, setScope] = useSessionStorage<'all' | 'movie' | 'comic'>('search_scope', 'all');
+    const [scope, setScope] = useState<'all' | 'movie' | 'comic'>(
+        scopeParamFromUrl === 'movie' ? 'movie' : 
+        scopeParamFromUrl === 'comic' ? 'comic' : 'all'
+    );
     const [categories, setCategories] = useState<Category[]>([]);
     const [countries, setCountries] = useState<Country[]>([]);
-    const [category, setCategory] = useSessionStorage('search_category', '');
-    const [country, setCountry] = useSessionStorage('search_country', '');
-    const [year, setYear] = useSessionStorage('search_year', '');
+    
+    const category = searchParams.get('category') || '';
+    const country = searchParams.get('country') || '';
+    const year = searchParams.get('year') || '';
+    const status = searchParams.get('status') || '';
     const mode = is$Mode();
+
+    const updateParam = (key: string, value: string) => {
+        setSearchParams(prev => {
+            const next = new URLSearchParams(prev);
+            if (value) next.set(key, value);
+            else next.delete(key);
+            return next;
+        }, { replace: true });
+    };
 
     const observer = useRef<IntersectionObserver | null>(null);
 
     useEffect(() => {
-        if (mode) {
-            setScope('movie');
-            setSearchParams({ scope: 'movie' }, { replace: true });
-        } else if (scopeParam === 'movie') setScope('movie');
-        else if (scopeParam === 'comic') setScope('comic');
-        else if (searchParams.has('scope') && scopeParam === 'all') setScope('all');
-    }, [scopeParam, searchParams, mode]);
+        const effectiveScope = mode ? 'movie' : scope;
+        if (effectiveScope === 'all') {
+            ['category', 'country', 'year', 'status'].forEach(k => {
+                if (searchParams.has(k)) updateParam(k, '');
+            });
+        }
+    }, [scope, mode]);
+
+    const handleKeywordChange = (val: string) => {
+        setKeyword(val);
+        setSearchParams(prev => {
+            const next = new URLSearchParams(prev);
+            if (val) next.set('q', val);
+            else next.delete('q');
+            return next;
+        }, { replace: true });
+    };
 
     const handleScopeChange = (newScope: 'all' | 'movie' | 'comic') => {
         setScope(newScope);
-        setSearchParams({ scope: newScope });
+        const next = new URLSearchParams(searchParams);
+        next.set('scope', newScope);
+        if (newScope === 'all') {
+            ['category', 'country', 'year', 'status'].forEach(k => next.delete(k));
+        }
+        setSearchParams(next, { replace: true });
     };
 
     useEffect(() => {
-        getCategories().then(setCategories);
-        getCountries().then(setCountries);
-    }, []);
+        getCategories(scope === 'comic').then(setCategories);
+        if (scope !== 'comic') {
+            getCountries().then(setCountries);
+        } else {
+            setCountries([]);
+        }
+    }, [scope]);
 
     useEffect(() => {
         if (keyword !== debouncedKeyword) {
@@ -68,12 +103,15 @@ export const Search = () => {
         setPage(1);
         setHasMore(true);
         
-        if (!debouncedKeyword && !category && !country && !year) {
+        const hasFilters = scope === 'comic' 
+            ? (category || status)
+            : (category || country || year);
+        if (!debouncedKeyword && !hasFilters) {
             return;
         }
         
         loadData(1, true);
-    }, [debouncedKeyword, category, country, year, scope]);
+    }, [debouncedKeyword, category, country, year, status, scope]);
 
     const loadData = async (pageNum: number, isNew: boolean) => {
         setLoading(true);
@@ -83,6 +121,7 @@ export const Search = () => {
             category,
             country,
             year,
+            status: scope === 'comic' ? status : undefined,
             scope 
         });
 
@@ -116,11 +155,13 @@ export const Search = () => {
 
     const categoryOptions = categories.map(c => ({ value: c.slug, label: c.name }));
     const countryOptions = countries.map(c => ({ value: c.slug, label: c.name }));
-    const activeFiltersCount = [category, country, year].filter(Boolean).length;
+    const activeFiltersCount = scope === 'comic'
+        ? [category, status].filter(Boolean).length
+        : [category, country, year].filter(Boolean).length;
 
     return (
-        <div className="p-4 md:p-8 min-h-screen">
-            <div className="flex flex-col gap-6 mb-8 max-w-5xl mx-auto">
+        <div className="p-4 md:p-8 min-h-screen flex flex-col">
+            <div className="flex flex-col gap-6 mb-8 max-w-5xl mx-auto w-full">
                   <div className="flex justify-center mb-2">
                     <div className="bg-[#1a1825] p-1 rounded-xl flex">
                         {!mode && (
@@ -158,7 +199,7 @@ export const Search = () => {
                             placeholder={scope === 'movie' ? "Tìm kiếm phim..." : scope === 'comic' ? "Tìm kiếm truyện..." : "Nhập tên nội dung..."}
                             className="w-full pl-12 pr-12 py-3 bg-[#1a1825] border border-white/10 rounded-xl text-white text-lg placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all shadow-lg"
                             value={keyword}
-                            onChange={(e) => setKeyword(e.target.value)}
+                            onChange={(e) => handleKeywordChange(e.target.value)}
                             autoFocus
                         />
                         {isDebouncing && (
@@ -172,6 +213,7 @@ export const Search = () => {
                     <button 
                         onClick={() => setShowFilters(!showFilters)}
                         className={`flex items-center justify-center w-12 rounded-xl border transition-all flex-shrink-0 ${
+                            scope === 'all' ? 'invisible' :
                             showFilters || activeFiltersCount > 0
                                 ? 'bg-purple-600 border-purple-500 text-white' 
                                 : 'bg-[#1a1825] border-white/10 text-slate-400 hover:text-white'
@@ -181,22 +223,32 @@ export const Search = () => {
                     </button>
                  </div>
 
-                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showFilters ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <div className={`overflow-hidden transition-all duration-300 ease-in-out ${scope === 'all' ? 'max-h-0 opacity-0' : showFilters ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0'}`}>
                     <div className="bg-[#1a1825] border border-white/10 rounded-xl p-4 shadow-xl">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             <CustomSelect 
                                 value={category}
-                                onChange={setCategory}
+                                onChange={(val) => updateParam('category', val)}
                                 options={categoryOptions}
                                 placeholder="Thể loại"
                                 className="w-full"
                             />
 
+                            {scope === 'comic' && (
+                                <CustomSelect 
+                                    value={status}
+                                    onChange={(val) => updateParam('status', val)}
+                                    options={COMIC_STATUSES}
+                                    placeholder="Trạng thái"
+                                    className="w-full"
+                                />
+                            )}
+
                             {scope !== 'comic' && (
                                 <>
                                     <CustomSelect 
                                         value={country}
-                                        onChange={setCountry}
+                                        onChange={(val) => updateParam('country', val)}
                                         options={countryOptions}
                                         placeholder="Quốc gia"
                                         className="w-full"
@@ -204,7 +256,7 @@ export const Search = () => {
 
                                     <CustomSelect 
                                         value={year}
-                                        onChange={setYear}
+                                        onChange={(val) => updateParam('year', val)}
                                         options={YEARS}
                                         placeholder="Năm"
                                         className="w-full"
@@ -248,8 +300,8 @@ export const Search = () => {
                 </div>
             )}
 
-            {!debouncedKeyword && !category && !country && !year && (
-                <div className="flex flex-col items-center justify-center h-[40vh] text-slate-600">
+            {!debouncedKeyword && !category && !country && !year && !status && (
+                <div className="flex-1 flex flex-col items-center justify-center text-slate-600">
                     <Icons.Search size={64} className="mb-4 opacity-20" />
                     <p>Nhập từ khóa để bắt đầu tìm kiếm</p>
                 </div>
