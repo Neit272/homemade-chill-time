@@ -28,7 +28,7 @@ export const Catalog: React.FC<CatalogProps> = ({ type, title }) => {
     const [category, setCategory] = useSessionStorage(`catalog_${type}_category`, '');
     const [country, setCountry] = useSessionStorage(`catalog_${type}_country`, '');
     const [year, setYear] = useSessionStorage(`catalog_${type}_year`, '');
-    const [status, setStatus] = useSessionStorage(`catalog_${type}_status`, 'truyen-moi');
+    const [status, setStatus] = useSessionStorage(`catalog_${type}_status`, 'dang-phat-hanh');
 
     const observer = useRef<IntersectionObserver | null>(null);
 
@@ -97,7 +97,7 @@ export const Catalog: React.FC<CatalogProps> = ({ type, title }) => {
     const categoryOptions = categories.map(c => ({ value: c.slug, label: c.name }));
     const countryOptions = countries.map(c => ({ value: c.slug, label: c.name }));
 
-    const activeFiltersCount = [category, country, year].filter(Boolean).length + (status !== 'truyen-moi' && type === 'truyen-tranh' ? 1 : 0);
+    const activeFiltersCount = [category, country, year].filter(Boolean).length + (status !== 'dang-phat-hanh' && type === 'truyen-tranh' ? 1 : 0);
 
     return (
         <div className="p-4 md:p-8 min-h-screen">

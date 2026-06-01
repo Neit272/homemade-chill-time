@@ -101,6 +101,18 @@ export const WatchRead = () => {
   };
 
   if (content.type === ContentType.COMIC || content.type === ContentType.MANGA) {
+      if (!content.chapters || content.chapters.length === 0) {
+          return (
+            <div className="h-screen bg-black flex flex-col items-center justify-center text-white gap-4">
+              <Icons.BookOpen size={48} className="text-yellow-500" />
+              <p className="text-lg font-semibold">Truyện đang trong quá trình sắp ra mắt</p>
+              <p className="text-slate-400 text-sm">Chưa có chương nào để đọc. Hãy quay lại sau!</p>
+              <button onClick={handleClose} className="mt-4 px-6 py-2 bg-purple-600 hover:bg-purple-700 rounded-xl font-medium transition-all">
+                Về trang chi tiết
+              </button>
+            </div>
+          );
+      }
       const rawChNum = parseInt(searchParams.get('ch') || '1');
       const chapters = content.chapters || [];
       const chapterIndex = chapters.findIndex(c => c.number === rawChNum);

@@ -28,6 +28,8 @@ export interface ContentItem {
   year: number;
   tags: string[];
   progress?: number;
+  status?: string;
+  hasChapters?: boolean;
 }
 
 export interface Episode {

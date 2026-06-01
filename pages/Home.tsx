@@ -61,7 +61,7 @@ const InfiniteHorizontalList = ({ title, initialItems, type, isHistory = false }
         
         const nextPage = page + 1;
         const newItems = type === 'comic' 
-            ? await getComicsList(nextPage) 
+            ? await getComicsList(nextPage, 'dang-phat-hanh') 
             : await getFeaturedContent(nextPage);
         
         if (newItems.length > 0) {
@@ -217,7 +217,7 @@ export const Home = () => {
         const load = async () => {
              const [movies, comics] = await Promise.all([
                  getFeaturedContent(1),
-                 getComicsList(1)
+                 getComicsList(1, 'dang-phat-hanh')
              ]);
              setInitialMovies(movies);
              setInitialComics(comics);

@@ -69,13 +69,19 @@ export const ContentCard: React.FC<ContentCardProps> = ({ item, priority = false
         )}
 
         <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-black/20 backdrop-blur-[1px] z-20">
-            <div className="h-12 w-12 rounded-full bg-purple-600/90 flex items-center justify-center shadow-lg shadow-purple-600/50 transform scale-75 group-hover:scale-100 transition-transform">
-                {item.type === ContentType.COMIC || item.type === ContentType.MANGA ? (
-                    <Icons.BookOpen className="text-white fill-white ml-0.5" size={24} />
-                ) : (
-                    <Icons.Play className="text-white fill-white ml-1" size={24} />
-                )}
-            </div>
+            {(item.type === ContentType.COMIC || item.type === ContentType.MANGA) && item.hasChapters === false ? (
+                <span className="px-3 py-1.5 bg-yellow-500/90 text-white text-xs font-bold rounded-lg shadow-lg">
+                    Sắp ra mắt
+                </span>
+            ) : (
+                <div className="h-12 w-12 rounded-full bg-purple-600/90 flex items-center justify-center shadow-lg shadow-purple-600/50 transform scale-75 group-hover:scale-100 transition-transform">
+                    {item.type === ContentType.COMIC || item.type === ContentType.MANGA ? (
+                        <Icons.BookOpen className="text-white fill-white ml-0.5" size={24} />
+                    ) : (
+                        <Icons.Play className="text-white fill-white ml-1" size={24} />
+                    )}
+                </div>
+            )}
         </div>
       </div>
 

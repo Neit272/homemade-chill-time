@@ -17,20 +17,6 @@ const inferType = (item: any, typeList?: string): ContentType => {
     return ContentType.MOVIE;
 };
 
-const isValidComic = (item: any): boolean => {
-    if (item.chaptersLatest && Array.isArray(item.chaptersLatest) && item.chaptersLatest.length > 0) {
-        return true;
-    }
-    
-    if (item.chapters && Array.isArray(item.chapters) && item.chapters.length > 0) {
-         return item.chapters.some((server: any) => 
-            server.server_data && Array.isArray(server.server_data) && server.server_data.length > 0
-         );
-    }
-
-    return false;
-};
-
 const optimizeImageUrl = (url: string): string => {
     if (!url) return '';
     if (url.includes('via.placeholder.com') || url.includes('picsum.photos') || url.includes('phimapi.com/image.php')) {
@@ -87,6 +73,10 @@ const normalizeComicItem = (apiData: any, cdnDomain: string): ContentItem => {
         }
     }
 
+    const hasChapters = !!(apiData.chaptersLatest?.length) || !!(
+        apiData.chapters?.length && apiData.chapters[0].server_data?.length
+    );
+
     return {
         id: apiData.slug,
         title: apiData.name,
@@ -97,7 +87,9 @@ const normalizeComicItem = (apiData: any, cdnDomain: string): ContentItem => {
         rating: 0,
         year: new Date(apiData.updatedAt || Date.now()).getFullYear(),
         tags: apiData.category?.map((c: any) => c.name) || [],
-        progress: 0
+        progress: 0,
+        status: apiData.status,
+        hasChapters
     };
 };
 
@@ -274,7 +266,9 @@ export const getComicsList = async (page: number = 1, statusSlug: string = 'truy
         if (!data.status || !data.data || !data.data.items) return [];
         const cdnDomain = data.data.APP_DOMAIN_CDN_IMAGE;
         
+        const hideComingSoon = statusSlug !== 'truyen-moi' && statusSlug !== 'sap-ra-mat';
         return data.data.items
+            .filter((item: any) => !hideComingSoon || item.status !== 'coming_soon')
             .map((item: any) => normalizeComicItem(item, cdnDomain));
     } catch (error) {
         console.error("Lỗi lấy danh sách truyện:", error);
@@ -434,7 +428,7 @@ export const getDetailedList = async (
         return getContentByYear(filters.year, page, filters, typeList);
     }
     if (typeList === 'truyen-tranh') {
-        const statusSlug = filters.status || 'truyen-moi';
+        const statusSlug = filters.status || 'dang-phat-hanh';
         return getComicsList(page, statusSlug);
     }
     if (typeList === 'phim-moi') {
@@ -571,7 +565,6 @@ export const searchContent = async (
             const cdnDomain = data.data.APP_DOMAIN_CDN_IMAGE;
             
             return data.data.items
-                .filter(isValidComic)
                 .map((item: any) => normalizeComicItem(item, cdnDomain));
         } catch (error) {
             console.error("Lỗi tìm kiếm truyện:", error);

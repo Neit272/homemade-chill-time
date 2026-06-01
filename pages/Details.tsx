@@ -121,6 +121,11 @@ export const Details = () => {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-8 justify-center md:justify-start px-4 sm:px-0">
+                    {(content.type === ContentType.COMIC || content.type === ContentType.MANGA) && content.status === 'Coming Soon' && (!content.chapters || content.chapters.length === 0) ? (
+                        <span className="px-8 py-3 bg-slate-700 text-slate-400 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-not-allowed w-full sm:w-auto">
+                            <Icons.BookOpen size={20} /> Sắp ra mắt
+                        </span>
+                    ) : (
                     <Link 
                         to={`/watch/${content.id}?server=${selectedServerIndex}`} 
                         className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-purple-900/30 w-full sm:w-auto"
@@ -130,6 +135,7 @@ export const Details = () => {
                             <><Icons.Play size={20} /> Xem Ngay</>
                         }
                     </Link>
+                    )}
                     
                     <button 
                         onClick={handleToggleFav}
