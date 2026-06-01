@@ -275,7 +275,6 @@ export const getComicsList = async (page: number = 1, statusSlug: string = 'truy
         const cdnDomain = data.data.APP_DOMAIN_CDN_IMAGE;
         
         return data.data.items
-            .filter(isValidComic) 
             .map((item: any) => normalizeComicItem(item, cdnDomain));
     } catch (error) {
         console.error("Lỗi lấy danh sách truyện:", error);
@@ -309,7 +308,6 @@ export const getContentByCategory = async (
             const cdnDomain = data.data.APP_DOMAIN_CDN_IMAGE;
             
             return data.data.items
-                .filter(isValidComic)
                 .map((item: any) => normalizeComicItem(item, cdnDomain));
         }
 
