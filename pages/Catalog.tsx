@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { getDetailedList, getCategories, getCountries } from '../services/api';
 import { ContentItem, Category, Country } from '../types';
 import { ContentCard } from '../components/ContentCard';
@@ -6,7 +7,6 @@ import { ContentCardSkeleton } from '../components/ContentCardSkeleton';
 import { Icons } from '../components/Icon';
 import { CustomSelect } from '../components/CustomSelect';
 import { YEARS, COMIC_STATUSES } from '../constants';
-import { useSessionStorage } from '../hooks/useSessionStorage';
 import { is$Mode } from '../services/api.ob';
 
 interface CatalogProps {
@@ -20,15 +20,25 @@ export const Catalog: React.FC<CatalogProps> = ({ type, title }) => {
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     
-    const [showFilters, setShowFilters] = useSessionStorage(`catalog_${type}_show_filters`, false);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [showFilters, setShowFilters] = useState(false);
 
     const [categories, setCategories] = useState<Category[]>([]);
     const [countries, setCountries] = useState<Country[]>([]);
     
-    const [category, setCategory] = useSessionStorage(`catalog_${type}_category`, '');
-    const [country, setCountry] = useSessionStorage(`catalog_${type}_country`, '');
-    const [year, setYear] = useSessionStorage(`catalog_${type}_year`, '');
-    const [status, setStatus] = useSessionStorage(`catalog_${type}_status`, 'dang-phat-hanh');
+    const category = searchParams.get('category') || '';
+    const country = searchParams.get('country') || '';
+    const year = searchParams.get('year') || '';
+    const status = searchParams.get('status') || 'dang-phat-hanh';
+
+    const updateParam = (key: string, value: string) => {
+        setSearchParams(prev => {
+            const next = new URLSearchParams(prev);
+            if (value) next.set(key, value);
+            else next.delete(key);
+            return next;
+        }, { replace: true });
+    };
 
     const observer = useRef<IntersectionObserver | null>(null);
 
@@ -134,8 +144,8 @@ export const Catalog: React.FC<CatalogProps> = ({ type, title }) => {
                                 <CustomSelect 
                                     value={status}
                                     onChange={(val) => {
-                                        setStatus(val);
-                                        if (category) setCategory(''); 
+                                        updateParam('status', val);
+                                        if (category) updateParam('category', ''); 
                                     }}
                                     options={COMIC_STATUSES}
                                     placeholder="Trạng thái"
@@ -145,7 +155,7 @@ export const Catalog: React.FC<CatalogProps> = ({ type, title }) => {
 
                             <CustomSelect 
                                 value={category}
-                                onChange={setCategory}
+                                onChange={(val) => updateParam('category', val)}
                                 options={categoryOptions}
                                 placeholder="Thể loại"
                                 className="w-full"
@@ -154,7 +164,7 @@ export const Catalog: React.FC<CatalogProps> = ({ type, title }) => {
                             {type !== 'truyen-tranh' && !is$Mode() && (
                                 <CustomSelect 
                                     value={country}
-                                    onChange={setCountry}
+                                    onChange={(val) => updateParam('country', val)}
                                     options={countryOptions}
                                     placeholder="Quốc gia"
                                     className="w-full"
@@ -164,7 +174,7 @@ export const Catalog: React.FC<CatalogProps> = ({ type, title }) => {
                             {type !== 'truyen-tranh' && (
                                 <CustomSelect 
                                     value={year}
-                                    onChange={setYear}
+                                    onChange={(val) => updateParam('year', val)}
                                     options={YEARS}
                                     placeholder="Năm"
                                     className="w-full"
