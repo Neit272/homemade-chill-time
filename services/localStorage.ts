@@ -1,4 +1,4 @@
-import { ContentItem } from '../types';
+import { ContentItem, HistoryItem } from '../types';
 
 const KEYS = {
     FAVORITES: 'Movie Time_favorites',
@@ -47,14 +47,6 @@ export const toggleFavorite = (item: ContentItem): boolean => {
     return isAdded;
 };
 
-export interface HistoryItem extends ContentItem {
-    lastViewedAt: number;
-    lastChapterName?: string; 
-    lastChapterId?: string;   
-    lastEpisodeName?: string; 
-    lastEpisodeNumber?: number; 
-}
-
 export const getHistory = (): HistoryItem[] => {
     try {
         const data = localStorage.getItem(KEYS.HISTORY);
@@ -64,10 +56,18 @@ export const getHistory = (): HistoryItem[] => {
     }
 };
 
-export const addToHistory = (item: ContentItem, meta?: { chapterName?: string, chapterId?: string, episodeName?: string, episodeNumber?: number }) => {
+export const addToHistory = (item: ContentItem, meta?: {
+    chapterName?: string, chapterId?: string,
+    episodeName?: string, episodeNumber?: number,
+    serverIdx?: number
+}) => {
     const history = getHistory();
+    const existing = history.find(h => h.id === item.id);
     const filtered = history.filter(h => h.id !== item.id);
-    
+
+    const sameEpisode = existing && existing.lastEpisodeNumber === meta?.episodeNumber &&
+                        existing.lastChapterNumber === meta?.chapterNumber;
+
     const newItem: HistoryItem = {
         id: item.id,
         title: item.title,
@@ -81,12 +81,32 @@ export const addToHistory = (item: ContentItem, meta?: { chapterName?: string, c
         lastViewedAt: Date.now(),
         lastChapterName: meta?.chapterName,
         lastChapterId: meta?.chapterId,
+        lastChapterNumber: meta?.chapterNumber,
         lastEpisodeName: meta?.episodeName,
-        lastEpisodeNumber: meta?.episodeNumber
+        lastEpisodeNumber: meta?.episodeNumber,
+        serverIdx: meta?.serverIdx,
+        progress: sameEpisode ? existing.progress : undefined,
+        duration: sameEpisode ? existing.duration : undefined,
     };
 
-    const newHistory = [newItem, ...filtered].slice(0, 20); 
+    const newHistory = [newItem, ...filtered].slice(0, 20);
     localStorage.setItem(KEYS.HISTORY, JSON.stringify(newHistory));
+};
+
+export const updateProgress = (id: string, progress: number, duration?: number) => {
+    const history = getHistory();
+    const idx = history.findIndex(h => h.id === id);
+    if (idx === -1) return;
+    history[idx].progress = progress;
+    if (duration) history[idx].duration = duration;
+    history[idx].lastViewedAt = Date.now();
+    localStorage.setItem(KEYS.HISTORY, JSON.stringify(history));
+};
+
+export const removeFromHistory = (id: string) => {
+    const history = getHistory();
+    const filtered = history.filter(h => h.id !== id);
+    localStorage.setItem(KEYS.HISTORY, JSON.stringify(filtered));
 };
 
 export const clearHistory = () => {

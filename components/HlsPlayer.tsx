@@ -8,6 +8,9 @@ interface HlsPlayerProps {
   poster?: string;
   title: string;
   onClose: () => void;
+  initialProgress?: number;
+  onProgress?: (currentTime: number, duration: number) => void;
+  onReady?: () => void;
 }
 
 const $f = (line: string, base: string): string => {
@@ -24,16 +27,18 @@ const $c = (text: string, base: string): string => {
     .join('\n');
 };
 
-export const HlsPlayer: React.FC<HlsPlayerProps> = ({ embedUrl, poster, title, onClose }) => {
+export const HlsPlayer: React.FC<HlsPlayerProps> = ({ embedUrl, poster, title, onClose, initialProgress, onProgress, onReady }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const hasSeeked = useRef(false);
 
   useEffect(() => {
     if (!embedUrl) { setError(true); return; }
+    hasSeeked.current = false;
 
     const init = async () => {
       const u = new URL(embedUrl);
@@ -65,7 +70,12 @@ export const HlsPlayer: React.FC<HlsPlayerProps> = ({ embedUrl, poster, title, o
           hls.attachMedia(videoRef.current);
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
             setReady(true);
+            if (initialProgress && initialProgress > 0 && videoRef.current && !hasSeeked.current) {
+              videoRef.current.currentTime = initialProgress;
+              hasSeeked.current = true;
+            }
             videoRef.current?.play().catch(() => {});
+            onReady?.();
           });
           hls.on(Hls.Events.ERROR, (_e, data) => {
             if (data.fatal) { setError(true); }
@@ -86,6 +96,13 @@ export const HlsPlayer: React.FC<HlsPlayerProps> = ({ embedUrl, poster, title, o
       if (hlsRef.current) hlsRef.current.destroy();
     };
   }, [embedUrl]);
+
+  useEffect(() => {
+    if (videoRef.current && initialProgress !== undefined && initialProgress > 0 && ready && !hasSeeked.current) {
+      videoRef.current.currentTime = initialProgress;
+      hasSeeked.current = true;
+    }
+  }, [initialProgress, ready]);
 
   useEffect(() => {
     if (showControls) {
@@ -140,6 +157,11 @@ export const HlsPlayer: React.FC<HlsPlayerProps> = ({ embedUrl, poster, title, o
         autoPlay
         playsInline
         onClick={() => setShowControls(!showControls)}
+        onTimeUpdate={() => {
+          if (videoRef.current && onProgress) {
+            onProgress(videoRef.current.currentTime, videoRef.current.duration || 0);
+          }
+        }}
       />
     </div>
   );

@@ -157,6 +157,7 @@ export const Sidebar = () => {
             <div className="border-t border-white/5 pt-6 mt-6">
                 <h3 className="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cá Nhân</h3>
                 <NavLink to="/favorites" label="Yêu Thích" icon={Icons.Heart} active={location.pathname === '/favorites'} />
+                <NavLink to="/history" label="Lịch Sử" icon={Icons.Clock} active={location.pathname === '/history'} />
             </div>
           </>
         ) : (

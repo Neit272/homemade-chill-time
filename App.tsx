@@ -13,6 +13,7 @@ const CategoryPage = React.lazy(() => import('./pages/CategoryPage').then(m => (
 const CountryPage = React.lazy(() => import('./pages/CountryPage').then(m => ({ default: m.CountryPage })));
 const YearPage = React.lazy(() => import('./pages/YearPage').then(m => ({ default: m.YearPage })));
 const Favorites = React.lazy(() => import('./pages/Favorites').then(m => ({ default: m.Favorites })));
+const HistoryPage = React.lazy(() => import('./pages/History').then(m => ({ default: m.HistoryPage })));
 const NotFound = React.lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
 
 const Loader = () => (
@@ -63,6 +64,7 @@ const App: React.FC = () => {
           
           <Route path="/details/:id" element={<Details />} />
           <Route path="/favorites" element={<Favorites />} />
+          <Route path="/history" element={<HistoryPage />} />
           <Route path="/watch/:id" element={<WatchRead />} />
           
           <Route path="*" element={<NotFound />} />

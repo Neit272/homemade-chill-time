@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { getFeaturedContent, getComicsList } from '../services/api'; 
+import { getFeaturedContent, getComicsList } from '../services/api';
+import { getHistory } from '../services/localStorage';
+import { HistoryItem } from '../types';
 import { ContentItem } from '../types';
 import { ContentCard } from '../components/ContentCard';
 import { ContentCardSkeleton } from '../components/ContentCardSkeleton';
@@ -143,10 +145,13 @@ const InfiniteHorizontalList = ({ title, initialItems, type, isHistory = false }
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
                 {items.map((item, index) => {
+                    const ep = (item as any).lastEpisodeNumber;
+                    const to = isHistory ? `/watch/${item.id}?ep=${ep || 1}&server=${(item as any).serverIdx || 0}&t=${(item as any).progress || 0}` : undefined;
+                    const episodeLabel = isHistory && ep !== undefined ? `Tập ${ep}` : undefined;
                     return (
                         <div key={item.id} className="snap-start flex-shrink-0 w-[160px] md:w-[220px]">
                             <div className="relative h-full">
-                                <ContentCard item={item} priority={index < 10} />
+                                <ContentCard item={item} priority={index < 10} to={to} episodeLabel={episodeLabel} />
                             </div>
                         </div>
                     );
@@ -167,6 +172,7 @@ export const Home = () => {
     const location = useLocation();
     const [initialMovies, setInitialMovies] = useState<ContentItem[]>([]);
     const [initialComics, setInitialComics] = useState<ContentItem[]>([]);
+    const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [c$Cnt, setC$Cnt] = useState(0);
     const [c$Show, setC$Show] = useState(false);
@@ -215,6 +221,7 @@ export const Home = () => {
              ]);
              setInitialMovies(movies);
              setInitialComics(comics);
+             setHistoryItems(getHistory());
              setLoading(false);
         };
         load();
@@ -250,7 +257,15 @@ export const Home = () => {
             </div>
 
             <Hero item={heroItem} />
-            
+
+            {historyItems.length > 0 && (
+                <InfiniteHorizontalList
+                    title="Tiếp Tục Xem"
+                    initialItems={historyItems}
+                    isHistory={true}
+                />
+            )}
+
             <InfiniteHorizontalList 
                 title="Phim Mới Cập Nhật" 
                 initialItems={listMovies} 

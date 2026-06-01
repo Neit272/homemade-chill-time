@@ -250,6 +250,14 @@ export const MobileNav = () => {
                 )}
 
                 <MobileNavItem 
+                    to="/history" 
+                    icon={Icons.Clock} 
+                    label="Lịch Sử" 
+                    active={location.pathname === '/history'} 
+                    onClick={() => setActiveMenu(null)}
+                />
+
+                <MobileNavItem 
                     to="/search" 
                     icon={Icons.Search} 
                     label="Tìm Kiếm" 

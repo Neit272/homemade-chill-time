@@ -66,6 +66,19 @@ export interface ContentDetails extends ContentItem {
   categories?: Category[];
 }
 
+export interface HistoryItem extends ContentItem {
+    lastViewedAt: number;
+    lastChapterName?: string;
+    lastChapterId?: string;
+    lastChapterNumber?: number;
+    lastEpisodeName?: string;
+    lastEpisodeNumber?: number;
+    progress?: number;
+    duration?: number;
+    serverIdx?: number;
+    chapterProgress?: number;
+}
+
 export enum ReaderMode {
   VERTICAL = 'VERTICAL',
   PAGINATED = 'PAGINATED'

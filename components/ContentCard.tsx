@@ -6,9 +6,11 @@ import { Icons } from './Icon';
 interface ContentCardProps {
   item: ContentItem;
   priority?: boolean;
+  to?: string;
+  episodeLabel?: string;
 }
 
-export const ContentCard: React.FC<ContentCardProps> = ({ item, priority = false }) => {
+export const ContentCard: React.FC<ContentCardProps> = ({ item, priority = false, to, episodeLabel }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
 
@@ -25,7 +27,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({ item, priority = false
   const badge = getBadgeInfo(item.type);
 
   return (
-    <Link to={`/details/${item.id}`} className="group relative block w-full cursor-pointer h-full">
+    <Link to={to || `/details/${item.id}`} className="group relative block w-full cursor-pointer h-full">
       <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-[#1a1825] shadow-lg border border-white/5 transition-all duration-300 group-hover:scale-[1.03] group-hover:shadow-purple-900/30 group-hover:border-purple-500/30">
         
         {(!isLoaded || isError) && (
@@ -42,12 +44,29 @@ export const ContentCard: React.FC<ContentCardProps> = ({ item, priority = false
           onLoad={() => setIsLoaded(true)}
           onError={() => setIsError(true)}
         />
+
+        {item.progress !== undefined && item.progress > 0 && (
+          <div className="absolute bottom-0 left-0 right-0 z-10 h-1 bg-white/10">
+            <div
+              className="h-full bg-purple-500 transition-all"
+              style={{ width: `${item.duration ? Math.min(100, (item.progress / item.duration) * 100) : 50}%` }}
+            />
+          </div>
+        )}
         
         <div className="absolute top-2 left-2 z-10">
             <span className={`px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider text-white shadow-sm ${badge.color}`}>
                 {badge.label}
             </span>
         </div>
+
+        {episodeLabel && (
+          <div className="absolute top-8 left-2 z-10">
+            <span className="px-2 py-0.5 text-[10px] font-medium text-white bg-purple-600/90 rounded-md shadow-lg backdrop-blur-sm">
+              {episodeLabel}
+            </span>
+          </div>
+        )}
 
         <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-black/20 backdrop-blur-[1px] z-20">
             <div className="h-12 w-12 rounded-full bg-purple-600/90 flex items-center justify-center shadow-lg shadow-purple-600/50 transform scale-75 group-hover:scale-100 transition-transform">
