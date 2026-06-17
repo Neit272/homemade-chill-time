@@ -21,8 +21,26 @@ const $f = (line: string, base: string): string => {
 };
 
 const $c = (text: string, base: string): string => {
-  return text.split('\n')
-    .filter(l => !l.includes('convertv8/') && !l.startsWith('#EXT-X-DISCONTINUITY'))
+  const lines = text.split('\n');
+  const drop = new Set<number>();
+  const isAd = (l: string) => l.includes('convertv8/') || /\/v8\/.*segment_\d{4}\.ts/.test(l);
+  for (let i = 0; i < lines.length; i++) {
+    if (!isAd(lines[i])) continue;
+    drop.add(i);
+    for (let j = i - 1; j >= 0; j--) {
+      if (drop.has(j)) break;
+      const p = lines[j].trim();
+      if (p === '' || p.startsWith('#EXTINF') || p.startsWith('#EXT-X-KEY') || p === '#EXT-X-DISCONTINUITY') {
+        drop.add(j);
+      } else break;
+    }
+    for (let j = i + 1; j < lines.length; j++) {
+      if (lines[j].startsWith('#EXT-X-DISCONTINUITY')) break;
+      drop.add(j);
+    }
+  }
+  return lines
+    .filter((_, i) => !drop.has(i))
     .map(l => $f(l, base))
     .join('\n');
 };
@@ -63,9 +81,15 @@ export const HlsPlayer: React.FC<HlsPlayerProps> = ({ embedUrl, poster, title, o
         const blob = new Blob([clean], { type: 'application/vnd.apple.mpegurl' });
         const blobUrl = URL.createObjectURL(blob);
 
-        if (videoRef.current && Hls.isSupported()) {
-          if (hlsRef.current) hlsRef.current.destroy();
-          const hls = new Hls();
+          if (videoRef.current && Hls.isSupported()) {
+            if (hlsRef.current) hlsRef.current.destroy();
+            const hls = new Hls({
+              enableWorker: true,
+              lowLatencyMode: false,
+              backbufferLength: 30,
+              maxBufferLength: 30,
+              maxMaxBufferLength: 60,
+            });
           hls.loadSource(blobUrl);
           hls.attachMedia(videoRef.current);
           hls.on(Hls.Events.MANIFEST_PARSED, () => {

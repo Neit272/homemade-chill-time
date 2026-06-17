@@ -5,6 +5,7 @@ export const useTrackProgress = (contentId: string, enabled: boolean) => {
     const progressRef = useRef(0);
 
     const saveProgress = useCallback((currentTime: number, duration?: number) => {
+        if (currentTime <= 10) return;
         progressRef.current = currentTime;
         updateProgress(contentId, currentTime, duration);
     }, [contentId]);

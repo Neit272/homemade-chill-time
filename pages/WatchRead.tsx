@@ -44,7 +44,7 @@ export const WatchRead = () => {
     }
     const history = getHistory();
     const h = history.find(i => i.id === id);
-    if (h && h.progress && h.progress > 0) {
+    if (h && h.progress && h.progress > 10) {
       setResumeInfo({
         progress: h.progress,
         episode: h.lastEpisodeNumber || 1,
