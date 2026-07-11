@@ -19,10 +19,7 @@ const inferType = (item: any, typeList?: string): ContentType => {
 
 const optimizeImageUrl = (url: string): string => {
     if (!url) return '';
-    if (url.includes('via.placeholder.com') || url.includes('picsum.photos') || url.includes('phimapi.com/image.php')) {
-        return url;
-    }
-    return `https://phimapi.com/image.php?url=${encodeURIComponent(url)}`;
+    return url;
 };
 
 const normalizeContentItem = (apiData: any, cdnDomain?: string): ContentItem => {
