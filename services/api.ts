@@ -187,6 +187,13 @@ const normalizeComicDetails = (apiResponse: any): ContentDetails => {
     };
 };
 
+const extractList = (data: any): { id: string; name: string; slug: string }[] => {
+  if (Array.isArray(data)) return data;
+  if (data?.data?.items && Array.isArray(data.data.items)) return data.data.items;
+  if (data?.items && Array.isArray(data.items)) return data.items;
+  return [];
+};
+
 export const getCategories = async (isComic: boolean = false): Promise<Category[]> => {
     if (is$Mode()) return get$Cats();
     try {
@@ -194,26 +201,21 @@ export const getCategories = async (isComic: boolean = false): Promise<Category[
             const response = await fetch(`${COMIC_API_BASE}/v1/api/the-loai`);
             if (!response.ok) return [];
             const data = await response.json();
-            if (data.data && Array.isArray(data.data.items)) {
-                return data.data.items.map((item: any) => ({
-                    id: item._id,
-                    name: item.name,
-                    slug: item.slug
-                }));
-            }
+            return extractList(data).map((item: any) => ({
+                id: item._id,
+                name: item.name,
+                slug: item.slug
+            }));
         } else {
             const response = await fetch(`${API_BASE_URL}/the-loai`);
             if (!response.ok) return [];
             const data = await response.json();
-            if (Array.isArray(data)) {
-                return data.map((item: any) => ({
-                    id: item._id,
-                    name: item.name,
-                    slug: item.slug
-                }));
-            }
+            return extractList(data).map((item: any) => ({
+                id: item._id,
+                name: item.name,
+                slug: item.slug
+            }));
         }
-        return [];
     } catch (error) {
         console.error("Lỗi lấy danh sách thể loại:", error);
         return [];
@@ -226,14 +228,11 @@ export const getCountries = async (): Promise<Country[]> => {
         const response = await fetch(`${API_BASE_URL}/quoc-gia`);
         if (!response.ok) return [];
         const data = await response.json();
-        if (Array.isArray(data)) {
-            return data.map((item: any) => ({
-                id: item._id,
-                name: item.name,
-                slug: item.slug
-            }));
-        }
-        return [];
+        return extractList(data).map((item: any) => ({
+            id: item._id,
+            name: item.name,
+            slug: item.slug
+        }));
     } catch (error) {
         return [];
     }
@@ -302,6 +301,8 @@ export const getContentByCategory = async (
                 .map((item: any) => normalizeComicItem(item, cdnDomain));
         }
 
+        const isMovieType = type && ['phim-le', 'phim-bo', 'hoat-hinh', 'tv-shows', 'phim-moi'].includes(type);
+
         const params = new URLSearchParams({
             page: page.toString(),
             limit: '24', 
@@ -315,7 +316,10 @@ export const getContentByCategory = async (
             if (!filters[key as keyof FilterParams]) params.delete(key);
         });
 
-        const url = `${API_BASE_URL}/v1/api/the-loai/${slug}?${params.toString()}`;
+        const base = isMovieType
+            ? `${API_BASE_URL}/v1/api/danh-sach/${type}?category=${slug}`
+            : `${API_BASE_URL}/v1/api/the-loai/${slug}`;
+        const url = `${base}&${params.toString()}`;
         const response = await fetch(url);
 
         if (!response.ok) return [];
@@ -342,6 +346,8 @@ export const getContentByCountry = async (
             return []; // Otruyen API không hỗ trợ lọc theo quốc gia
         }
 
+        const isMovieType = type && ['phim-le', 'phim-bo', 'hoat-hinh', 'tv-shows', 'phim-moi'].includes(type);
+
         const params = new URLSearchParams({
             page: page.toString(),
             limit: '24', 
@@ -355,7 +361,10 @@ export const getContentByCountry = async (
             if (!filters[key as keyof FilterParams]) params.delete(key);
         });
 
-        const url = `${API_BASE_URL}/v1/api/quoc-gia/${slug}?${params.toString()}`;
+        const base = isMovieType
+            ? `${API_BASE_URL}/v1/api/danh-sach/${type}?country=${slug}`
+            : `${API_BASE_URL}/v1/api/quoc-gia/${slug}`;
+        const url = `${base}&${params.toString()}`;
         const response = await fetch(url);
 
         if (!response.ok) return [];
@@ -382,6 +391,8 @@ export const getContentByYear = async (
             return []; 
         }
 
+        const isMovieType = type && ['phim-le', 'phim-bo', 'hoat-hinh', 'tv-shows', 'phim-moi'].includes(type);
+
         const params = new URLSearchParams({
             page: page.toString(),
             limit: '24', 
@@ -395,7 +406,10 @@ export const getContentByYear = async (
             if (!filters[key as keyof FilterParams]) params.delete(key);
         });
 
-        const url = `${API_BASE_URL}/v1/api/nam/${year}?${params.toString()}`;
+        const base = isMovieType
+            ? `${API_BASE_URL}/v1/api/danh-sach/${type}?year=${year}`
+            : `${API_BASE_URL}/v1/api/nam/${year}`;
+        const url = `${base}&${params.toString()}`;
         const response = await fetch(url);
 
         if (!response.ok) return [];
