@@ -7,6 +7,7 @@ import { VideoPlayer } from '../components/VideoPlayer';
 import { HlsPlayer } from '../components/HlsPlayer';
 import { ComicReader } from '../components/ComicReader';
 import { ResumeModal } from '../components/ResumeModal';
+import { ReportAdModal } from '../components/ReportAdModal';
 import { useTrackProgress } from '../hooks/useTrackProgress';
 import { Icons } from '../components/Icon';
 
@@ -18,6 +19,7 @@ export const WatchRead = () => {
   const [content, setContent] = useState<ContentDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [showResume, setShowResume] = useState(false);
+  const [showReport, setShowReport] = useState(false);
   const [resumeInfo, setResumeInfo] = useState<{ progress: number; episode: number; server: number } | null>(null);
   const [startTime, setStartTime] = useState<number | undefined>(undefined);
   const [tracking, setTracking] = useState(false);
@@ -160,6 +162,14 @@ export const WatchRead = () => {
             onClose={() => setShowResume(false)}
           />
         )}
+        {showReport && (
+          <ReportAdModal
+            title={content.title}
+            embedUrl={episode?.link_embed || ''}
+            episodeName={episode?.title}
+            onClose={() => setShowReport(false)}
+          />
+        )}
 
         <div className="w-full aspect-video md:h-[75vh] bg-black sticky top-0 z-50 shadow-2xl shadow-purple-900/20">
             {isPhimapi && episode?.link_embed ? (
@@ -203,28 +213,34 @@ export const WatchRead = () => {
                     </p>
                 </div>
 
-                {content.episodes && content.episodes.length > 1 && (
-                    <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
-                        {content.episodes.map((server, idx) => (
-                            <button
-                                key={idx}
-                                onClick={() => {
-                                    const newServerEpisodes = content.episodes?.[idx]?.server_data || [];
-                                    const sameEp = newServerEpisodes.find(e => e.number === epNum);
-                                    const newEpNum = sameEp ? epNum : (newServerEpisodes[0]?.number || 1);
-                                    navigate(`/watch/${id}?ep=${newEpNum}&server=${idx}`);
-                                }}
-                                className={`px-4 py-2 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap transition-all border ${
-                                    serverIdx === idx
-                                    ? 'bg-purple-600 text-white border-purple-500 shadow-lg shadow-purple-900/20'
-                                    : 'bg-[#1a1825] text-slate-400 border-white/10 hover:bg-[#252236] hover:text-slate-200'
-                                }`}
-                            >
-                                {server.server_name}
-                            </button>
-                        ))}
-                    </div>
-                )}
+                <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
+                    <button
+                        onClick={() => setShowReport(true)}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap transition-all border border-red-500/30 bg-red-600/10 text-red-400 hover:bg-red-600/20 hover:text-red-300"
+                        title="Báo cáo quảng cáo"
+                    >
+                        <Icons.Flag size={14} />
+                        Báo cáo QC
+                    </button>
+                    {content.episodes && content.episodes.length > 1 && content.episodes.map((server, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => {
+                                const newServerEpisodes = content.episodes?.[idx]?.server_data || [];
+                                const sameEp = newServerEpisodes.find(e => e.number === epNum);
+                                const newEpNum = sameEp ? epNum : (newServerEpisodes[0]?.number || 1);
+                                navigate(`/watch/${id}?ep=${newEpNum}&server=${idx}`);
+                            }}
+                            className={`px-4 py-2 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap transition-all border ${
+                                serverIdx === idx
+                                ? 'bg-purple-600 text-white border-purple-500 shadow-lg shadow-purple-900/20'
+                                : 'bg-[#1a1825] text-slate-400 border-white/10 hover:bg-[#252236] hover:text-slate-200'
+                            }`}
+                        >
+                            {server.server_name}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
