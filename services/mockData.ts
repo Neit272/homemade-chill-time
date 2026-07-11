@@ -13,9 +13,10 @@ export const MOCK_DB: ContentDetails[] = [
     tags: ['Sci-Fi', 'Action', 'Thriller'],
     status: 'Completed',
     cast: ['Keanu Reeves', 'Ana de Armas'],
-    episodes: [
-        { id: 'e1', title: 'Full Movie', number: 1, duration: '2h 14m', thumbnail: 'https://picsum.photos/300/170?random=10' }
-    ]
+    episodes: [{
+        server_name: 'Vietsub',
+        server_data: [{ id: 'e1', title: 'Full Movie', number: 1, duration: '2h 14m', thumbnail: 'https://picsum.photos/300/170?random=10' }]
+    }]
   },
   {
     id: 'c1',
@@ -47,13 +48,16 @@ export const MOCK_DB: ContentDetails[] = [
     year: 2025,
     tags: ['Sci-Fi', 'Mystery'],
     status: 'Ongoing',
-    episodes: Array.from({ length: 5 }).map((_, i) => ({
-        id: `ep${i+1}`,
-        title: `Episode ${i+1}`,
-        number: i + 1,
-        duration: '45m',
-        thumbnail: `https://picsum.photos/300/170?random=${200 + i}`
-    }))
+    episodes: [{
+        server_name: 'Vietsub',
+        server_data: Array.from({ length: 5 }).map((_, i) => ({
+            id: `ep${i+1}`,
+            title: `Episode ${i+1}`,
+            number: i + 1,
+            duration: '45m',
+            thumbnail: `https://picsum.photos/300/170?random=${200 + i}`
+        }))
+    }]
   },
   {
     id: 'c2',

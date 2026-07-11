@@ -23,7 +23,7 @@ const $f = (line: string, base: string): string => {
 const $c = (text: string, base: string): string => {
   const lines = text.split('\n');
   const drop = new Set<number>();
-  const isAd = (l: string) => l.includes('convertv8/') || l.includes('/adjump/') || /\/v8\/.*segment_\d{4}\.ts/.test(l);
+  const isAd = (l: string) => /convertv\d+\//.test(l) || l.includes('/adjump/') || /\/v\d+\/.*segment_\d{4}\.ts/.test(l);
   for (let i = 0; i < lines.length; i++) {
     if (!isAd(lines[i])) continue;
     drop.add(i);
@@ -51,7 +51,7 @@ export const HlsPlayer: React.FC<HlsPlayerProps> = ({ embedUrl, poster, title, o
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const hasSeeked = useRef(false);
 
   useEffect(() => {
@@ -86,7 +86,7 @@ export const HlsPlayer: React.FC<HlsPlayerProps> = ({ embedUrl, poster, title, o
             const hls = new Hls({
               enableWorker: true,
               lowLatencyMode: false,
-              backbufferLength: 30,
+              backBufferLength: 30,
               maxBufferLength: 30,
               maxMaxBufferLength: 60,
             });

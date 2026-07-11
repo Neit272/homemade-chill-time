@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ContentItem, ContentType } from '../types';
 import { Icons } from './Icon';
+import { is$Mode } from '../services/api.ob';
 
 interface ContentCardProps {
   item: ContentItem;
@@ -49,16 +50,18 @@ export const ContentCard: React.FC<ContentCardProps> = ({ item, priority = false
           <div className="absolute bottom-0 left-0 right-0 z-10 h-1 bg-white/10">
             <div
               className="h-full bg-purple-500 transition-all"
-              style={{ width: `${item.duration ? Math.min(100, (item.progress / item.duration) * 100) : 50}%` }}
+              style={{ width: `${Math.min(100, (item.progress / (item.duration || item.progress)) * 100)}%` }}
             />
           </div>
         )}
         
+        {!is$Mode() && (
         <div className="absolute top-2 left-2 z-10">
             <span className={`px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider text-white shadow-sm ${badge.color}`}>
                 {badge.label}
             </span>
         </div>
+        )}
 
         {episodeLabel && (
           <div className="absolute top-8 left-2 z-10">

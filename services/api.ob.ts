@@ -18,10 +18,6 @@ const _d = (s: string): string => {
 const $b = _d($u);
 const $c = parseInt(_d($m));
 
-const $t = (d: any): ContentType => {
-    return ContentType.MOVIE;
-};
-
 const $0 = (d: any): ContentItem => {
     return {
         id: String(d.id) || d.slug,

@@ -1,4 +1,4 @@
-import { ContentItem, ContentDetails, ContentType, Episode, Chapter, Category, Country } from '../types';
+import { ContentItem, ContentDetails, ContentType, Episode, Chapter, Category, Country, EpisodeServer } from '../types';
 import { MOCK_DB } from './mockData';
 import { is$Mode, get$List, get$Detail, get$Search, get$Cats, get$ByCategory, get$ByYear } from './api.ob';
 
@@ -245,7 +245,8 @@ export const getFeaturedContent = async (page: number = 1): Promise<ContentItem[
         if (!response.ok) return page === 1 ? MOCK_DB : [];
         const data = await response.json();
         if (!data.status || !data.items) return page === 1 ? MOCK_DB : [];
-        return data.items.map((item: any) => normalizeContentItem(item));
+        const cdnDomain = data.pathImage || data.APP_DOMAIN_CDN_IMAGE;
+        return data.items.map((item: any) => normalizeContentItem(item, cdnDomain));
     } catch (error) {
         return page === 1 ? MOCK_DB : []; 
     }

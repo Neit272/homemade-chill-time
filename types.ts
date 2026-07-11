@@ -28,6 +28,7 @@ export interface ContentItem {
   year: number;
   tags: string[];
   progress?: number;
+  duration?: number;
   status?: string;
   hasChapters?: boolean;
 }

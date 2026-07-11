@@ -57,7 +57,7 @@ export const getHistory = (): HistoryItem[] => {
 };
 
 export const addToHistory = (item: ContentItem, meta?: {
-    chapterName?: string, chapterId?: string,
+    chapterName?: string, chapterId?: string, chapterNumber?: number,
     episodeName?: string, episodeNumber?: number,
     serverIdx?: number
 }) => {

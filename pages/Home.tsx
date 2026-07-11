@@ -177,7 +177,7 @@ export const Home = () => {
     const [c$Cnt, setC$Cnt] = useState(0);
     const [c$Show, setC$Show] = useState(false);
     const [c$Val, setC$Val] = useState('');
-    const c$Ref = useRef<ReturnType<typeof setTimeout>>();
+    const c$Ref = useRef<ReturnType<typeof setTimeout>>(undefined);
     
     const mode = is$Mode();
     

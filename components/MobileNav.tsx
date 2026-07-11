@@ -66,7 +66,7 @@ export const MobileNav = () => {
   const [c$Cnt, setC$Cnt] = useState(0);
   const [c$Show, setC$Show] = useState(false);
   const [c$Val, setC$Val] = useState('');
-  const c$Ref = useRef<ReturnType<typeof setTimeout>>();
+  const c$Ref = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const handle$Click = () => {
     clearTimeout(c$Ref.current);
@@ -225,7 +225,7 @@ export const MobileNav = () => {
                     <MobileNavItem 
                         icon={Icons.Film} 
                         label="Phim" 
-                        active={activeMenu === 'movies' || location.pathname === '/movies' || location.pathname === '/series'} 
+                        active={activeMenu === 'movies' || location.pathname === '/movies' || location.pathname === '/series' || location.pathname === '/cartoons' || location.pathname === '/new-movies' || location.pathname.startsWith('/category/') || location.pathname.startsWith('/country/') || location.pathname.startsWith('/year/')} 
                         onClick={() => toggleMenu('movies')}
                     />
                 )}
@@ -234,7 +234,7 @@ export const MobileNav = () => {
                     <MobileNavItem 
                         icon={Icons.BookOpen} 
                         label="Truyện" 
-                        active={activeMenu === 'comics' || location.pathname.includes('/comics')} 
+                        active={activeMenu === 'comics' || location.pathname.startsWith('/comics') || location.pathname.startsWith('/comic-category/')} 
                         onClick={() => toggleMenu('comics')}
                     />
                 )}

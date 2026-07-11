@@ -130,7 +130,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                 onClick={handleToggle}
             >
                 <span className="truncate mr-2 text-left flex-1 block">
-                    {selectedOption ? selectedOption.label : placeholder}
+                    {selectedOption ? selectedOption.label : value || placeholder}
                 </span>
                 <Icons.ChevronLeft size={16} className={`text-slate-400 transition-transform duration-200 flex-shrink-0 ${isOpen ? 'rotate-90' : '-rotate-90'}`} />
             </button>
