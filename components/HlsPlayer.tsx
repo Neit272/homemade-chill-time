@@ -23,7 +23,7 @@ const $f = (line: string, base: string): string => {
 const $c = (text: string, base: string): string => {
   const lines = text.split('\n');
   const drop = new Set<number>();
-  const isAd = (l: string) => /convertv\d+\//.test(l) || l.includes('/adjump/') || /\/v\d+\/.*segment_\d{4}\.ts/.test(l);
+  const isAd = (l: string) => /convertv\d*\//.test(l) || l.includes('/adjump/') || /\/v\d*\/.*segment_\d{4}\.ts/.test(l);
   for (let i = 0; i < lines.length; i++) {
     if (!isAd(lines[i])) continue;
     drop.add(i);
