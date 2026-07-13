@@ -94,12 +94,6 @@ export const ContentCard: React.FC<ContentCardProps> = ({ item, priority = false
         </h3>
         <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
             <span>{item.year}</span>
-            {item.description && (
-                <>
-                <span className="w-1 h-1 rounded-full bg-slate-600" />
-                <span className="truncate max-w-[120px]">{item.description}</span>
-                </>
-            )}
             
             {item.rating > 0 && (
                 <>
